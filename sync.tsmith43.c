@@ -13,8 +13,8 @@ typedef struct {
 } ThreadInfo;
 
 void *producer(void *param){
-    ThreadInfo *data;
-    data = (ThreadInfo *) param;
+    ThreadInfo *tinfo;
+    tinfo = (ThreadInfo *) param;
     int done, len;
     char *chp;
     char buffer[BUFFERLEN];
@@ -41,7 +41,28 @@ void *producer(void *param){
 }
 
 int main() {
+    int done, len;
+    char *chp;
+    char buffer[BUFFERLEN];
+    done = 0;
+    while ( ! done ) {
+        printf("%s", PROMPT);
+        chp = fgets(buffer, BUFFERLEN, stdin);
+        if (chp != NULL) {
+            len = strlen(buffer);
+            if (buffer[len-1] == '\n') {
+                buffer[len-1] = '\0';
+                len = len - 1;
+            }
+            printf("I read the string '%s'\n", buffer);
+            if ( ! strcmp(buffer, "quit") || ! strcmp(buffer, "exit") )
+                done = 1;
+        } else {
+            printf("error or end of file: exiting\n");
+            return 0;
 
+        }
+    }
     printf("Hello, World!\n");
     return 0;
 }

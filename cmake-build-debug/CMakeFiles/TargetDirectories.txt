@@ -1,0 +1,3 @@
+C:/Users/Tim Smith/Documents/1-2025/CS2300-Advanced/Threads2/cmake-build-debug/CMakeFiles/Threads2.dir
+C:/Users/Tim Smith/Documents/1-2025/CS2300-Advanced/Threads2/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Tim Smith/Documents/1-2025/CS2300-Advanced/Threads2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
