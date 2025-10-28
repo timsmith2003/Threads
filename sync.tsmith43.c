@@ -38,6 +38,29 @@ void *producer(void *param){
         }
     }
 
+    char inputNoSpaces[BUFFERLEN];
+    int buf_idx = 0;
+    for (int i = 0; i < input; i++){
+        if (input[i] != " ") {
+            inputNoSpaces[buf_idx] = input[i];
+            buf_idx++;
+        }
+    }
+    printf("(P) got '%s'\n", inputNoSpaces);
+    pthread_mutex_lock(&tinfo->lock);
+    if (strlen(buf) == 0){
+        for (int i = 0; i < inputNoSpaces; i++){
+            buf[i] = input[i];
+        }
+        tinfo -> dataReady = 1;
+    }
+    printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
+    pthread_mutex_unlock(&tinfo->lock);
+    pthread_mutex_lock(&tinfo->lock);
+    if (tinfo->responseReady){
+
+    }
+
 }
 
 int main() {
