@@ -69,7 +69,20 @@ void *consumer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
     pthread_mutex_lock(tinfo->lock);
     while(tinfo->dataReady == 1){
-
+        char backwards[BUFFERLEN];
+        int bkwd_idx = 0;
+        for (int i = strlen(tinfo->buf) - 1; i > 0; i--){
+            backwards[bkwd_idx] = tinfo->buf[i];
+            bkwd_idx++;
+        }
+        int pallindrome = 0;
+        for (int i = 0; i < strlen(backwards); i++){
+            if (tinfo->buf[i] == backwards[i]){
+                pallidome = 1;
+            }
+            else
+                pallindrome = 0;
+        }
     }
 
 }
