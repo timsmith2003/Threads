@@ -19,7 +19,6 @@ void *producer(void *param){
     char *chp;
     char buffer[BUFFERLEN];
     done = 0;
-    printf("hi1");
     while ( ! done ) {
         printf("%s", PROMPT);
         chp = fgets(buffer, BUFFERLEN, stdin);
@@ -70,7 +69,20 @@ void *consumer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
     pthread_mutex_lock(tinfo->lock);
     while(tinfo->dataReady == 1){
-        printf("hello");
+        char backwards[BUFFERLEN];
+        int bkwd_idx = 0;
+        for (int i = strlen(tinfo->buf) - 1; i > 0; i--){
+            backwards[bkwd_idx] = tinfo->buf[i];
+            bkwd_idx++;
+        }
+        int pallindrome = 0;
+        for (int i = 0; i < strlen(backwards); i++){
+            if (tinfo->buf[i] == backwards[i]){
+                pallidome = 1;
+            }
+            else
+                pallindrome = 0;
+        }
     }
 
 }
@@ -92,7 +104,9 @@ int main() {
 
     pthread_join(producerTid, NULL);
     pthread_join(consumerTid, NULL);
+    return 0;
 
+    tinfo->buf =
     printf("Hello, World!\n");
     return 0;
 }
