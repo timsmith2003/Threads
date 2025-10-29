@@ -4,6 +4,7 @@
 
 #define PROMPT " >"
 #define BUFFERLEN 256
+
 typedef struct {
     char buf[BUFFERLEN]; // the buffer
     int dataReady; // whether the producer has put data in the shared buffer
@@ -13,8 +14,7 @@ typedef struct {
 } ThreadInfo;
 
 void *producer(void *param){
-    ThreadInfo *tinfo;
-    tinfo = (ThreadInfo *) param;
+    ThreadInfo *tinfo = (ThreadInfo *) param;
     int done, len;
     char *chp;
     char buffer[BUFFERLEN];
@@ -27,6 +27,7 @@ void *producer(void *param){
             if (buffer[len-1] == '\n') {
                 buffer[len-1] = '\0';
                 len = len - 1;
+
             }
             printf("I read the string '%s'\n", buffer);
             if ( ! strcmp(buffer, "quit") || ! strcmp(buffer, "exit") )
@@ -48,14 +49,15 @@ void *producer(void *param){
     }
     printf("(P) got '%s'\n", inputNoSpaces);
     pthread_mutex_lock(&tinfo->lock);
-    if (strlen(buf) == 0){
+    if (strlen(tinfo->buf) == 0){
         for (int i = 0; i < inputNoSpaces; i++){
-            buf[i] = input[i];
+            tinfo->buf[i] = input[i];
         }
         tinfo -> dataReady = 1;
     }
     printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
     pthread_mutex_unlock(&tinfo->lock);
+
     pthread_mutex_lock(&tinfo->lock);
     if (tinfo->responseReady){
 
@@ -63,29 +65,35 @@ void *producer(void *param){
 
 }
 
-int main() {
-    int done, len;
-    char *chp;
-    char buffer[BUFFERLEN];
-    done = 0;
-    while ( ! done ) {
-        printf("%s", PROMPT);
-        chp = fgets(buffer, BUFFERLEN, stdin);
-        if (chp != NULL) {
-            len = strlen(buffer);
-            if (buffer[len-1] == '\n') {
-                buffer[len-1] = '\0';
-                len = len - 1;
-            }
-            printf("I read the string '%s'\n", buffer);
-            if ( ! strcmp(buffer, "quit") || ! strcmp(buffer, "exit") )
-                done = 1;
-        } else {
-            printf("error or end of file: exiting\n");
-            return 0;
+void *consumer(void *param){
+    ThreadInfo *tinfo = (ThreadInfo *) param;
+    pthread_mutex_lock(tinfo->lock);
+    while(tinfo->dataReady == 1){
 
-        }
     }
+
+}
+
+
+
+int main() {
+    ThreadInfo tinfo;
+    pthread_t producerTid, consumerTid;
+
+    pthread_mutex_init(&tinfo.lock, NULL);
+
+    tinfo.dataReady = 0;
+    tinfo.reponseReady = 0;
+    tinfo.done = 0;
+
+    pthread_create(&producerTid, NULL, producer, &tinfo);
+    pthread_create(&consumerTid, NULL, consumer, &tinfo);
+
+    pthread_join(producerTid, NULL);
+    pthread_join(consumerTid, NULL);
+    return 0;
+
+    tinfo->buf =
     printf("Hello, World!\n");
     return 0;
 }
