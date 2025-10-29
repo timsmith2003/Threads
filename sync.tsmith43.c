@@ -19,6 +19,7 @@ void *producer(void *param){
     char *chp;
     char buffer[BUFFERLEN];
     done = 0;
+    printf("hi1");
     while ( ! done ) {
         printf("%s", PROMPT);
         chp = fgets(buffer, BUFFERLEN, stdin);
@@ -41,17 +42,17 @@ void *producer(void *param){
 
     char inputNoSpaces[BUFFERLEN];
     int buf_idx = 0;
-    for (int i = 0; i < input; i++){
-        if (input[i] != " ") {
-            inputNoSpaces[buf_idx] = input[i];
+    for (int i = 0; i < strlen(chp); i++){
+        if (chp[i] != " ") {
+            inputNoSpaces[buf_idx] = chp[i];
             buf_idx++;
         }
     }
     printf("(P) got '%s'\n", inputNoSpaces);
     pthread_mutex_lock(&tinfo->lock);
     if (strlen(tinfo->buf) == 0){
-        for (int i = 0; i < inputNoSpaces; i++){
-            tinfo->buf[i] = input[i];
+        for (int i = 0; i < strlen(inputNoSpaces); i++){
+            tinfo->buf[i] = chp[i];
         }
         tinfo -> dataReady = 1;
     }
@@ -59,7 +60,7 @@ void *producer(void *param){
     pthread_mutex_unlock(&tinfo->lock);
 
     pthread_mutex_lock(&tinfo->lock);
-    if (tinfo->responseReady){
+    if (tinfo->reponseReady){
 
     }
 
@@ -69,7 +70,7 @@ void *consumer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
     pthread_mutex_lock(tinfo->lock);
     while(tinfo->dataReady == 1){
-
+        printf("hello");
     }
 
 }
@@ -91,9 +92,7 @@ int main() {
 
     pthread_join(producerTid, NULL);
     pthread_join(consumerTid, NULL);
-    return 0;
 
-    tinfo->buf =
     printf("Hello, World!\n");
     return 0;
 }
