@@ -15,11 +15,13 @@ typedef struct {
 
 void *producer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
-    int done, len;
+    int len;
     char *chp;
     char buffer[BUFFERLEN];
-    done = 0;
-    while ( ! done ) {
+    pthread_mutex_lock(&tinfo->lock);
+    printf("lock aquired by producer");
+    tinfo->done = 0;
+    while ( tinfo->done == 0 ) {
         printf("%s", PROMPT);
         chp = fgets(buffer, BUFFERLEN, stdin);
         if (chp != NULL) {
@@ -31,7 +33,7 @@ void *producer(void *param){
             }
             printf("I read the string '%s'\n", buffer);
             if ( ! strcmp(buffer, "quit") || ! strcmp(buffer, "exit") )
-                done = 1;
+                tinfo->done = 1;
         } else {
             printf("error or end of file: exiting\n");
             return 0;
@@ -48,7 +50,7 @@ void *producer(void *param){
         }
     }
     printf("(P) got '%s'\n", inputNoSpaces);
-    pthread_mutex_lock(&tinfo->lock);
+
     if (strlen(tinfo->buf) == 0){
         for (int i = 0; i < strlen(inputNoSpaces); i++){
             tinfo->buf[i] = chp[i];
@@ -59,15 +61,13 @@ void *producer(void *param){
     pthread_mutex_unlock(&tinfo->lock);
 
     pthread_mutex_lock(&tinfo->lock);
-    if (tinfo->reponseReady){
-
-    }
-
 }
 
 void *consumer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
-    pthread_mutex_lock(tinfo->lock);
+
+    pthread_mutex_lock(&tinfo->lock);
+    printf("lock aquired by consumer");
     while(tinfo->dataReady == 1){
         char backwards[BUFFERLEN];
         int bkwd_idx = 0;
@@ -78,13 +78,14 @@ void *consumer(void *param){
         int pallindrome = 0;
         for (int i = 0; i < strlen(backwards); i++){
             if (tinfo->buf[i] == backwards[i]){
-                pallidome = 1;
+                pallindrome = 1;
             }
             else
                 pallindrome = 0;
         }
     }
-
+    pthread_mutex_unlock(&tinfo->lock);
+    printf("lock Released by consumer");
 }
 
 
@@ -106,7 +107,6 @@ int main() {
     pthread_join(consumerTid, NULL);
     return 0;
 
-    tinfo->buf =
     printf("Hello, World!\n");
     return 0;
 }
