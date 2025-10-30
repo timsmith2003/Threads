@@ -19,7 +19,7 @@ void *producer(void *param){
     char *chp;
     char input[BUFFERLEN];
     pthread_mutex_lock(&tinfo->lock);
-    printf("lock aquired by producer");
+    printf("(P) Starts \n");
     tinfo->done = 0;
     while ( tinfo->done == 0 ) {
         printf("%s", PROMPT);
@@ -30,7 +30,7 @@ void *producer(void *param){
                 input[len-1] = '\0';
                 len = len - 1;
             }
-            printf("I read the string '%s'\n", input);
+            printf("(P) got '%s'\n", input);
             if ( ! strcmp(input, "quit") || ! strcmp(input, "exit") )
                 tinfo->done = 1;
         } else {
@@ -45,7 +45,6 @@ void *producer(void *param){
                 buf_idx++;
             }
         }
-        printf("NOSPACES '%s'\n", inputNoSpaces);
 
         //    printf("(P) got '%s'\n", inputNoSpaces);
 
@@ -55,26 +54,25 @@ void *producer(void *param){
             }
             tinfo -> dataReady = 1;
         }
-        printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
         pthread_mutex_unlock(&tinfo->lock);
-
+        printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
         pthread_mutex_lock(&tinfo->lock);
-        printf("Lock aquired by producer");
         if (tinfo->reponseReady = 1){
             char response[BUFFERLEN];
             strcpy(response, tinfo->buf);
-            printf("(P) response is '%s'", response);
+            printf("(P) response is '%s'\n", response);
         }
     }
 }
 
 void *consumer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
-    printf("hi");
+
+
     pthread_mutex_lock(&tinfo->lock);
-    printf("lock aquired by consumer");
     while(tinfo->done == 0){
-        if(tinfo->dataReady == 1) {
+        if(tinfo->reponseReady == 0) {
+            printf("(C) read '%s'\n", tinfo->buf);
             char backwards[BUFFERLEN];
             int bkwd_idx = 0;
             for (int i = strlen(tinfo->buf) - 1; i > 0; i--) {
@@ -96,11 +94,11 @@ void *consumer(void *param){
             char no[BUFFERLEN] = "no";
             if (pallindrome){
                 strcpy(tinfo->buf, yes);
-                printf("(C) sending back 'yes'");
+                printf("(C) sending back 'yes'\n");
             }
             else{
                 strcpy(tinfo->buf, no);
-                printf("(C) sending back 'no'");
+                printf("(C) sending back 'no'\n");
             }
             tinfo->reponseReady = 1;
         }
