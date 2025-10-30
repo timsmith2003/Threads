@@ -58,14 +58,14 @@ void *producer(void *param){
         printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
         pthread_mutex_unlock(&tinfo->lock);
 
-        pthread_mutex_lock(&tinfo->lock);
-        printf("Lock aquired by producer");
+//        pthread_mutex_lock(&tinfo->lock);
+//        printf("Lock aquired by producer");
     }
 }
 
 void *consumer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
-
+    printf("hi");
     pthread_mutex_lock(&tinfo->lock);
     printf("lock aquired by consumer");
     while(tinfo->done == 0){
@@ -82,7 +82,7 @@ void *consumer(void *param){
                     pallindrome = 1;
                 } else
                     pallindrome = 0;
-
+            tinfo->dataReady = 0;
             }
         }
         pthread_mutex_unlock(&tinfo->lock);
