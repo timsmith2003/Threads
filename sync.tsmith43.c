@@ -58,8 +58,13 @@ void *producer(void *param){
         printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
         pthread_mutex_unlock(&tinfo->lock);
 
-//        pthread_mutex_lock(&tinfo->lock);
-//        printf("Lock aquired by producer");
+        pthread_mutex_lock(&tinfo->lock);
+        printf("Lock aquired by producer");
+        if (tinfo->reponseReady = 1){
+            char response[BUFFERLEN];
+            strcpy(response, tinfo->buf);
+            printf("(P) response is '%s'", response);
+        }
     }
 }
 
@@ -82,8 +87,22 @@ void *consumer(void *param){
                     pallindrome = 1;
                 } else
                     pallindrome = 0;
-            tinfo->dataReady = 0;
+
             }
+            for (int i = 0; i < strlen(tinfo->buf); i++){
+                tinfo->buf[i] = ' ';
+            }
+            char yes[BUFFERLEN] = "yes";
+            char no[BUFFERLEN] = "no";
+            if (pallindrome){
+                strcpy(tinfo->buf, yes);
+                printf("(C) sending back 'yes'");
+            }
+            else{
+                strcpy(tinfo->buf, no);
+                printf("(C) sending back 'no'");
+            }
+            tinfo->reponseReady = 1;
         }
         pthread_mutex_unlock(&tinfo->lock);
     }
