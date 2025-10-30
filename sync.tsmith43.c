@@ -17,50 +17,50 @@ void *producer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
     int len;
     char *chp;
-    char buffer[BUFFERLEN];
+    char input[BUFFERLEN];
     pthread_mutex_lock(&tinfo->lock);
     printf("lock aquired by producer");
     tinfo->done = 0;
     while ( tinfo->done == 0 ) {
         printf("%s", PROMPT);
-        chp = fgets(buffer, BUFFERLEN, stdin);
+        chp = fgets(input, BUFFERLEN, stdin);
         if (chp != NULL) {
-            len = strlen(buffer);
-            if (buffer[len-1] == '\n') {
-                buffer[len-1] = '\0';
+            len = strlen(input);
+            if (input[len-1] == '\n') {
+                input[len-1] = '\0';
                 len = len - 1;
-
             }
-            printf("I read the string '%s'\n", buffer);
-            if ( ! strcmp(buffer, "quit") || ! strcmp(buffer, "exit") )
+            printf("I read the string '%s'\n", input);
+            if ( ! strcmp(input, "quit") || ! strcmp(input, "exit") )
                 tinfo->done = 1;
         } else {
             printf("error or end of file: exiting\n");
             return 0;
-
         }
-    }
-
-    char inputNoSpaces[BUFFERLEN];
-    int buf_idx = 0;
-    for (int i = 0; i < strlen(chp); i++){
-        if (chp[i] != " ") {
-            inputNoSpaces[buf_idx] = chp[i];
-            buf_idx++;
+        char inputNoSpaces[BUFFERLEN];
+        int buf_idx = 0;
+        for (int i = 0; i < strlen(input); i++){
+            if (input[i] != ' ') {
+                inputNoSpaces[buf_idx] = input[i];
+                buf_idx++;
+            }
         }
-    }
-    printf("(P) got '%s'\n", inputNoSpaces);
+        printf("NOSPACES '%s'\n", inputNoSpaces);
 
-    if (strlen(tinfo->buf) == 0){
-        for (int i = 0; i < strlen(inputNoSpaces); i++){
-            tinfo->buf[i] = chp[i];
+        //    printf("(P) got '%s'\n", inputNoSpaces);
+
+        if (strlen(tinfo->buf) == 0){
+            for (int i = 0; i < strlen(inputNoSpaces); i++){
+                tinfo->buf[i] = inputNoSpaces[i];
+            }
+            tinfo -> dataReady = 1;
         }
-        tinfo -> dataReady = 1;
-    }
-    printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
-    pthread_mutex_unlock(&tinfo->lock);
+        printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
+        pthread_mutex_unlock(&tinfo->lock);
 
-    pthread_mutex_lock(&tinfo->lock);
+        pthread_mutex_lock(&tinfo->lock);
+        printf("Lock aquired by producer");
+    }
 }
 
 void *consumer(void *param){
@@ -68,24 +68,26 @@ void *consumer(void *param){
 
     pthread_mutex_lock(&tinfo->lock);
     printf("lock aquired by consumer");
-    while(tinfo->dataReady == 1){
-        char backwards[BUFFERLEN];
-        int bkwd_idx = 0;
-        for (int i = strlen(tinfo->buf) - 1; i > 0; i--){
-            backwards[bkwd_idx] = tinfo->buf[i];
-            bkwd_idx++;
-        }
-        int pallindrome = 0;
-        for (int i = 0; i < strlen(backwards); i++){
-            if (tinfo->buf[i] == backwards[i]){
-                pallindrome = 1;
+    while(tinfo->done == 0){
+        if(tinfo->dataReady == 1) {
+            char backwards[BUFFERLEN];
+            int bkwd_idx = 0;
+            for (int i = strlen(tinfo->buf) - 1; i > 0; i--) {
+                backwards[bkwd_idx] = tinfo->buf[i];
+                bkwd_idx++;
             }
-            else
-                pallindrome = 0;
+            int pallindrome = 0;
+            for (int i = 0; i < strlen(backwards); i++) {
+                if (tinfo->buf[i] == backwards[i]) {
+                    pallindrome = 1;
+                } else
+                    pallindrome = 0;
+
+            }
         }
+        pthread_mutex_unlock(&tinfo->lock);
     }
-    pthread_mutex_unlock(&tinfo->lock);
-    printf("lock Released by consumer");
+
 }
 
 
