@@ -64,6 +64,9 @@ void *producer(void *param){
             strcpy(response, tinfo->buf);
             printf("(P) response is '%s'\n", response);
         }
+        for (int i = 0; i < strlen(tinfo->buf); i++){
+            tinfo->buf[i] = '\0';
+        }
     }
 }
 
@@ -76,20 +79,20 @@ void *consumer(void *param){
             printf("(C) read '%s'\n", tinfo->buf);
             char backwards[BUFFERLEN];
             int bkwd_idx = 0;
-            for (int i = strlen(tinfo->buf) - 1; i > 0; i--) {
+            for (int i = strlen(tinfo->buf) - 1; i >= 0; i--) {
                 backwards[bkwd_idx] = tinfo->buf[i];
                 bkwd_idx++;
             }
-            int pallindrome = 0;
+            backwards[bkwd_idx] = '\0';
+            int pallindrome = 1;
             for (int i = 0; i < strlen(backwards); i++) {
-                if (tinfo->buf[i] == backwards[i]) {
-                    pallindrome = 1;
-                } else
+                if (tinfo->buf[i] != backwards[i]) {
                     pallindrome = 0;
+                }
 
             }
             for (int i = 0; i < strlen(tinfo->buf); i++){
-                tinfo->buf[i] = ' ';
+                tinfo->buf[i] = '\0';
             }
             char yes[BUFFERLEN] = "yes";
             char no[BUFFERLEN] = "no";
