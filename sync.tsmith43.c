@@ -55,57 +55,61 @@ void *producer(void *param){
             tinfo -> dataReady = 1;
         }
         pthread_mutex_unlock(&tinfo->lock);
+
         printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
+
         pthread_mutex_lock(&tinfo->lock);
         if (tinfo->reponseReady = 1){
             char response[BUFFERLEN];
             strcpy(response, tinfo->buf);
             printf("(P) response is '%s'\n", response);
         }
-        for (int i = 0; i < strlen(tinfo->buf); i++){
-            tinfo->buf[i] = '\0';
-        }
     }
 }
 
 void *consumer(void *param){
     ThreadInfo *tinfo = (ThreadInfo *) param;
-
-
     pthread_mutex_lock(&tinfo->lock);
     while(tinfo->done == 0){
-        if(tinfo->reponseReady == 0) {
+        char *response = "";
+        if(tinfo->dataReady == 1) {
             printf("(C) read '%s'\n", tinfo->buf);
             char backwards[BUFFERLEN];
             int bkwd_idx = 0;
-            for (int i = strlen(tinfo->buf) - 1; i >= 0; i--) {
+            for (int i = strlen(tinfo->buf) - 1; i > 0; i--) {
                 backwards[bkwd_idx] = tinfo->buf[i];
                 bkwd_idx++;
             }
-            backwards[bkwd_idx] = '\0';
-            int pallindrome = 1;
+            int pallindrome = 0;
             for (int i = 0; i < strlen(backwards); i++) {
-                if (tinfo->buf[i] != backwards[i]) {
+                if (tinfo->buf[i] == backwards[i]) {
+                    pallindrome = 1;
+                } else
                     pallindrome = 0;
-                } 
 
             }
             for (int i = 0; i < strlen(tinfo->buf); i++){
-                tinfo->buf[i] = '\0';
+                tinfo->buf[i] = ' ';
             }
             char yes[BUFFERLEN] = "yes";
             char no[BUFFERLEN] = "no";
+
             if (pallindrome){
                 strcpy(tinfo->buf, yes);
-                printf("(C) sending back 'yes'\n");
+                response = "yes";
+//                printf("(C) sending back 'yes'\n");
             }
             else{
                 strcpy(tinfo->buf, no);
-                printf("(C) sending back 'no'\n");
+                response = "no";
+//                printf("(C) sending back 'no'\n");
             }
             tinfo->reponseReady = 1;
         }
         pthread_mutex_unlock(&tinfo->lock);
+        printf("(C) Sending back '%s'\n", response);
+        pthread_mutex_lock(&tinfo->lock);
+
     }
 
 }
