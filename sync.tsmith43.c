@@ -22,6 +22,9 @@ void *producer(void *param){
     printf("(P) Starts \n");
     tinfo->done = 0;
     while ( tinfo->done == 0 ) {
+        for (int i = 0; i < BUFFERLEN; i++){
+            tinfo->buf[i] = '\0';
+        }
         printf("%s", PROMPT);
         chp = fgets(input, BUFFERLEN, stdin);
         if (chp != NULL) {
@@ -52,11 +55,13 @@ void *producer(void *param){
             for (int i = 0; i < strlen(inputNoSpaces); i++){
                 tinfo->buf[i] = inputNoSpaces[i];
             }
+            tinfo->buf[strlen(inputNoSpaces)] = '\0';
             tinfo -> dataReady = 1;
         }
         pthread_mutex_unlock(&tinfo->lock);
 
         printf("(P) wrote '%s' to buffer\n", inputNoSpaces);
+        sched_yield();
 
         pthread_mutex_lock(&tinfo->lock);
         if (tinfo->reponseReady = 1){
@@ -64,7 +69,7 @@ void *producer(void *param){
             strcpy(response, tinfo->buf);
             printf("(P) response is '%s'\n", response);
         }
-        for (int i = 0; i < strlen(tinfo->buf); i++){
+        for (int i = 0; i < BUFFERLEN; i++){
             tinfo->buf[i] = '\0';
         }
     }
@@ -89,11 +94,11 @@ void *consumer(void *param){
                 if (tinfo->buf[i] != backwards[i]) {
                     pallindrome = 0;
                 }
-
             }
-            for (int i = 0; i < strlen(tinfo->buf); i++){
+            for (int i = 0; i < BUFFERLEN; i++){
                 tinfo->buf[i] = '\0';
             }
+            printf("CLEAR %s",tinfo->buf);
             char yes[BUFFERLEN] = "yes";
             char no[BUFFERLEN] = "no";
 
@@ -111,10 +116,9 @@ void *consumer(void *param){
         }
         pthread_mutex_unlock(&tinfo->lock);
         printf("(C) Sending back '%s'\n", response);
+        sched_yield();
         pthread_mutex_lock(&tinfo->lock);
-
     }
-
 }
 
 
